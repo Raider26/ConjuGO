@@ -3,6 +3,7 @@ import 'package:conjugo/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:conjugo/drawer_menu.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 FirebaseFirestore db = FirebaseFirestore.instance;
 
@@ -18,7 +19,8 @@ class SettingsState extends State<Settings> {
   TextEditingController _urlController = TextEditingController();
   String? userPicture = "https://upload.wikimedia.org/wikipedia/commons/a/af/Image_non_disponible.png";
 
-  Uri cguUrl = Uri(scheme: 'http',host: 'conjugo-imtne.great-site.net',path: '/cgu.html'); //TODO : à retirer
+  final Uri cguUrl = Uri.parse('http://conjugo-imtne.great-site.net/cgu.html');
+  final Uri privacyPolicyUrl = Uri.parse('http://conjugo-imtne.great-site.net/privacy_policy.html');
 
   @override void initState() {
     initializeVariables();
@@ -84,7 +86,6 @@ class SettingsState extends State<Settings> {
                   ],
                 )
               ),
-              const SizedBox(height: 50),
               ElevatedButton(
                 onPressed: () {deleteUser(context);},
                 style: ButtonStyle(
@@ -97,6 +98,37 @@ class SettingsState extends State<Settings> {
                   children: [
                     Text('Supprimer le compte '),
                     Icon(Icons.delete),
+                  ],
+                )
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {launchUrl(cguUrl);},
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                  maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+                  minimumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Lire les CGUs '),
+                    Icon(Icons.article),
+                  ],
+                )
+              ),
+              ElevatedButton(
+                onPressed: () {launchUrl(privacyPolicyUrl);},
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                  maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+                  minimumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Lire la politique de confidentialité '),
+                    Icon(Icons.article),
                   ],
                 )
               ),

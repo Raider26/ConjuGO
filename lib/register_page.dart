@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:conjugo/authentication_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Création instance pour communiquer avec la base + partie authentification
 FirebaseFirestore db = FirebaseFirestore.instance;
@@ -30,6 +31,9 @@ class RegisterPageState extends State<RegisterPage> {
 
   bool obscureText1 = true;
   bool obscureText2 = true;
+  bool isChecked = false;
+
+  final Uri cguUrl = Uri.parse('http://conjugo-imtne.great-site.net/cgu.html');
 
   // Création fonction qui vérifie si le mot de passe contient au moins 1 lettre et 1 chiffre
   bool passwordContainLetterAndNumber(String password) {
@@ -199,6 +203,36 @@ class RegisterPageState extends State<RegisterPage> {
                 )
               ),
             ])),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: isChecked,
+                  activeColor: Colors.blue,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isChecked = value ?? false;
+                    });
+                  }
+                ),
+                const Text("Accepter les CGUs")
+              ]
+            ),
+            ElevatedButton(
+              onPressed: () {launchUrl(cguUrl);},
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                maximumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+                minimumSize: MaterialStateProperty.all<Size>(Size(MediaQuery.of(context).size.width * 0.8, 30,)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Lire les CGU '),
+                  Icon(Icons.article),
+                ],
+              )
+            ),
             ElevatedButton(
                 //Bouton inscription
                 child: const Text("S'inscrire"),
@@ -210,22 +244,26 @@ class RegisterPageState extends State<RegisterPage> {
                       passwordContainLetterAndNumber(passwordController.text) == true) {
                     //Vérifications que le mail a bien été rentré correctement 2 fois
                       //Inscription
-                      try {
-                        await auth.registerWithEmailAndPassword(emailController.text, passwordController.text);
-                        // Connecte l'utilisateur après l'inscription
-                        await auth.signInWithEmailAndPassword(emailController.text, passwordController.text);
-                      } catch (exception) {
-                        if (context.mounted) {
-                          if (exception.toString()=="[firebase_auth/email-already-in-use] The email address is already in use by another account.") {
-                            showErrorDialog(context, "Un compte avec la même adresse email existe déjà");
-                            emailController.clear();
-                          } else if (exception.toString()=="[firebase_auth/invalid-email] The email address is badly formatted.") {
-                            showErrorDialog(context, "format d'email invalide");
-                            emailController.clear();
+                      if (isChecked) {
+                        try {
+                          await auth.registerWithEmailAndPassword(emailController.text, passwordController.text);
+                          // Connecte l'utilisateur après l'inscription
+                          await auth.signInWithEmailAndPassword(emailController.text, passwordController.text);
+                        } catch (exception) {
+                          if (context.mounted) {
+                            if (exception.toString()=="[firebase_auth/email-already-in-use] The email address is already in use by another account.") {
+                              showErrorDialog(context, "Un compte avec la même adresse email existe déjà");
+                              emailController.clear();
+                            } else if (exception.toString()=="[firebase_auth/invalid-email] The email address is badly formatted.") {
+                              showErrorDialog(context, "format d'email invalide");
+                              emailController.clear();
+                            }
                           }
+                          passwordController.clear();
+                          passwordController2.clear();
                         }
-                        passwordController.clear();
-                        passwordController2.clear();
+                      } else {
+                        showErrorDialog(context, "Vous devez accepter les CGUs pour vous inscrire");
                       }
                   } else {
                     showErrorDialog(context, "Mot de passe trop faible");
